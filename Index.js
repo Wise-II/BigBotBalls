@@ -1,5 +1,5 @@
 // Variable Declarations, to be edited if new features are added
-const  {Client, Intents} = require('discord.js');
+const  {Client, Intents, Message} = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 
@@ -22,4 +22,15 @@ const loadCommands = (dir) => {
 //loads the command handler function and defines the subdirectory as well as logging it in the console
 loadCommands('commands');
 console.log('Commands Loaded');
+
+//logs the console indicating successfull login
+client.once('ready',() =>{
+    console.log('logged in successfully as ${client.user.tag}!');
+});
+
+client.on('messageCreate', async (message) => {
+    if (!message.content.startsWith(prefix)|| message.author.bot)return;
+
+    const args = message.content.slice(prefix)
+})
 
