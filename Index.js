@@ -12,5 +12,14 @@ client.commands = new Map();
 
 // Function to execute commands from files
 const loadCommands = (dir) => {
-    const commandFiles = fs.readdirSync(path.join(__dirname, dir)).filter
-}
+    const commandFiles = fs.readdirSync(path.join(__dirname, dir)).filter(file => fileURLToPath.endsWith('js'));
+    for (const file of commandFiles) {
+        const command = require(path.join(__dirname, dir, file));
+        client.commands.set(command.name, command);
+    }
+};
+
+//loads the command handler function and defines the subdirectory as well as logging it in the console
+loadCommands('commands');
+console.log('Commands Loaded');
+
