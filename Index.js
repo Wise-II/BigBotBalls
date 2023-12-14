@@ -1,52 +1,52 @@
-// Variable Declarations, to be edited if new features are added
-const  {Client, Intents, Message} = require('discord.js');
+const { Client, Events, GatewayIntentBits } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 
-const client = new Client({intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILDS_MESSAGES]});
-// prefix config
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 const config = require('./config.json');
-const prefix = config.prefix
+const prefix = "!";
+
+var handler = require("@tomdev/discord.js-command-handler");
+var cmdhandler = new handler(client, "/BigBotBalls/commands", prefix);
 
 client.commands = new Map();
 
-// Function to execute commands from files
-const loadCommands = (dir) => {
-    const commandFiles = fs.readdirSync(path.join(__dirname, dir)).filter(file => fileURLToPath.endsWith('js'));
-    for (const file of commandFiles) {
-        const command = require(path.join(__dirname, dir, file));
-        client.commands.set(command.name, command);
-    }
-};
-
-//loads the command handler function and defines the subdirectory as well as logging it in the console
-loadCommands('commands');
-console.log('Commands Loaded');
-
-//logs the console indicating successfull login
-client.once('ready',() =>{
-    console.log('logged in successfully as ${client.user.tag}!');
-});
-
-client.on('messageCreate', async (message) => {
-    if (!message.content.startsWith(prefix)|| message.author.bot)return;
-
-    const args = message.content.slice(prefix.length).trim().split(/ +/);
-    const commandName = args.shift().toLowerCase();
-    const command = client.commands.get(commandName) ||
-    client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
-    if (!command) return;
-
-    try{
-        command.execute(message, args);   
-    } catch (error) {
-        console.error('Error executing command"${command.name}"')
-        message.reply('There was an error executing command"${command.name}"')
-
-    }
-
+client.once('ready', () => {
+    console.log(`Logged in successfully as ${client.user.tag}!`);
+    client.user.setActivity("With your feelings || !");
     
 });
 
-client.login(config.token);
+client.on('message', message => {
+    if (message.mentions.has(client.user)) {
+        message.channel.send("Prefix is: `!`");
+    }
+});
+
+
+client.on('messageDelete', message => {
+    const channel1 = message.guild.channels.cache.find(ch => ['modlog', 'mod-log', 'logs'].includes(ch.name));
+    if (!channel1) return;
+    const user = message.author;
+    console.log(`${message.id} was deleted!`);
+    const messageDelete = new Discord.MessageEmbed()
+        .setTitle('Message Delete')
+        .addField('in channel', message.channel)
+        .addField('User', `${message.author}`)
+        .addField('Content in message', "`" + "``asciidoc\n" + `[${message.content}]` + "\n`" + "``")
+        .setFooter('Timmy BETA -> Logging, Deleted Messages')
+        .setTimestamp()
+        .setColor('#8B0000')
+        .setThumbnail(user.displayAvatarURL({ dynamic: false }));
+    channel1.send(messageDelete);
+
+    if (!message.partial) {
+        console.log(`It had content: "${message.content}"`);
+    }
+});
+
+client.config = require('./auth.json')
+client.login(client.config.token)
+
+// ...
 

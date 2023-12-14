@@ -1,0 +1,7 @@
+
+!! SAVE THIS NUMBER FOR LATER !!
+
+
+
+
+https://discord.com/api/oauth2/authorize?client_id=737411193991331910&permissions=2185031056614&scope=bot%20applications.commands

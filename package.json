@@ -9,7 +9,10 @@
   "author": "Wise",
   "license": "ISC",
   "dependencies": {
-    "discord.js": "^14.14.1"
+    "@tomdev/discord.js-command-handler": "^1.4.0",
+    "discord.js": "^14.14.1",
+    "fs": "^0.0.1-security",
+    "path": "^0.12.7"
   },
   "devDependencies": {
     "eslint": "^8.55.0"
