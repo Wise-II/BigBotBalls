@@ -10,6 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "@tomdev/discord.js-command-handler": "^1.4.0",
+    "async": "^3.2.5",
+    "aysnc": "^0.0.1-security",
     "discord.js": "^14.14.1",
     "fs": "^0.0.1-security",
     "path": "^0.12.7"
