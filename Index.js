@@ -31,7 +31,22 @@ client.once('ready',() =>{
 client.on('messageCreate', async (message) => {
     if (!message.content.startsWith(prefix)|| message.author.bot)return;
 
-    const args = message.content.slice(prefix)
+    const args = message.content.slice(prefix.length).trim().split(/ +/);
+    const commandName = args.shift().toLowerCase();
+    const command = client.commands.get(commandName) ||
+    client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
+    if (!command) return;
+
+    try{
+        command.execute(message, args);   
+    } catch (error) {
+        console.error('Error executing command"${command.name}"')
+        message.reply('There was an error executing command"${command.name}"')
+
+    }
+
     
-})
+});
+
+client.login(config.token);
 
