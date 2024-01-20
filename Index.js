@@ -1,12 +1,14 @@
-const fs = require('node:fs');
+const { Client, Collection, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 const path = require('node:path');
-const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
-const { timeout } = require("async");
-
-
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const fs = require('node:fs');
 const config = require('./config.json');
-var prefix = '!';
+const auth = require('./auth.json');
+
+const client = new Client({ 
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] 
+});
+
+const prefix = '!';
 
 var handler = require("@tomdev/discord.js-command-handler");
 var cmdhandler = new handler(client, "/commands", prefix);
@@ -15,59 +17,57 @@ const foldersPath = path.join(__dirname, 'commands');
 const commandFolders = fs.readdirSync(foldersPath);
 
 for (const folder of commandFolders) {
-    const commandsPath = Path.join(foldersPath, folder);
+    const commandsPath = path.join(foldersPath, folder);
     const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
     for (const file of commandFiles) {
-        const filePath = path.join(commandsPath,file);
+        const filePath = path.join(commandsPath, file);
         const command = require(filePath);
-        // Set a new item in the Collection with the key as the command name and the value as the exported module
         if ('data' in command && 'execute' in command) {
-			client.commands.set(command.data.name, command);
-		} else {
-			console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
-		}
-	}
+            client.commands.set(command.data.name, command);
+        } else {
+            console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+        }
+    }
+}
 
- }
-
-
-// sets bot status and logs in the console that it is ready
 client.once('ready', () => {
     console.log(`Logged in successfully as ${client.user.tag}!`);
     client.user.setActivity("With your feelings || !");
-    
 });
 
-client.on('message', message => {
-    if (message.mentions.has(client.user)) {
-        message.channel.send("Prefix is: `!`");
+client.on('interactionCreate', async interaction => {
+    if (!interaction.isCommand()) return;
+
+    const command = client.commands.get(interaction.commandName);
+
+    if (!command) return;
+
+    try {
+        await command.execute(interaction);
+    } catch (error) {
+        console.error(error);
+        await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
     }
 });
-
 
 client.on('messageDelete', message => {
-    const channel1 = message.guild.channels.cache.find(ch => ['logs'].includes(ch.name));
+    if (!message.guild) return;
+    const channel1 = message.guild.channels.cache.find(ch => ch.name === 'logs');
     if (!channel1) return;
-    const user = message.author;
-    console.log(`${message.id} was deleted!`);
-    const messageDelete = new Discord.MessageEmbed()
+
+    const messageDelete = new EmbedBuilder()
         .setTitle('Message Delete')
-        .addField('in channel', message.channel)
-        .addField('User', `${message.author}`)
-        .addField('Content in message', "`" + "``asciidoc\n" + `[${message.content}]` + "\n`" + "``")
-        .setFooter('Timmy BETA -> Logging, Deleted Messages')
+        .addFields([
+            { name: 'In Channel', value: message.channel.toString() },
+            { name: 'User', value: message.author.toString() },
+            { name: 'Content in message', value: `\`\`\`asciidoc\n[${message.content}]\`\`\`` }
+        ])
+        .setFooter({ text: 'Timmy BETA -> Logging, Deleted Messages' })
         .setTimestamp()
         .setColor('#8B0000')
-        .setThumbnail(user.displayAvatarURL({ dynamic: false }));
-    channel1.send(messageDelete);
+        .setThumbnail(message.author.displayAvatarURL({ dynamic: false }));
 
-    if (!message.partial) {
-        console.log(`It had content: "${message.content}"`);
-    }
+    channel1.send({ embeds: [messageDelete] });
 });
 
-client.config = require('./auth.json')
-client.login(client.config.token)
-
-// ...
-
+client.login(auth.token);
