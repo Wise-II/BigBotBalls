@@ -2,38 +2,46 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 const { timeout } = require("async");
+const foldersPath = 'BigBotBalls/silly';
+const commandFolders = fs.readdirSync(foldersPath).filter(item => fs.statSync(path.join(foldersPath, item)).isDirectory());
 
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 const config = require('./config.json');
-var prefix = '!';
+var prefix = 't.';
 
-var handler = require("@tomdev/discord.js-command-handler");
-var cmdhandler = new handler(client, "/commands", prefix);
-client.commands = new Collection();
-const foldersPath = path.join(__dirname, 'commands');
-const commandFolders = fs.readdirSync(foldersPath);
+//var handler = require("@tomdev/discord.js-command-handler");
+//var cmdhandler = new handler(client, "commands", prefix);
+//client.commands = new Collection();
+ // Make sure this is the correct path to your commands directory
+
 
 for (const folder of commandFolders) {
-    const commandsPath = Path.join(foldersPath, folder);
-    const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
-    for (const file of commandFiles) {
-        const filePath = path.join(commandsPath,file);
-        const command = require(filePath);
-        // Set a new item in the Collection with the key as the command name and the value as the exported module
-        if ('data' in command && 'execute' in command) {
-			client.commands.set(command.data.name, command);
-		} else {
-			console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
-		}
-	}
+    const commandsPath = path.join(foldersPath, folder);
 
- }
+    if (!fs.existsSync(commandsPath) || !fs.statSync(commandsPath).isDirectory()) {
+        console.error(`${commandsPath} is not a directory or does not exist.`);
+        continue; // Skip to the next iteration if it's not a directory
+    }
+
+    const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+
+    for (const file of commandFiles) {
+        const filePath = path.join(commandsPath, file);
+        try {
+            const command = require(filePath);
+            // Process the command object here
+        } catch (error) {
+            console.error(`Failed to load command at ${filePath}:`, error);
+        }
+    }
+}
 
 
 // sets bot status and logs in the console that it is ready
 client.once('ready', () => {
     console.log(`Logged in successfully as ${client.user.tag}!`);
+    console.log('')
     client.user.setActivity("With your feelings || !");
     
 });
