@@ -8,7 +8,8 @@ const commandFolders = fs.readdirSync(foldersPath).filter(item => fs.statSync(pa
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 const config = require('./config.json');
-var prefix = 't.';
+var prefix = '!';
+const auth = require('./auth.json')
 
 //var handler = require("@tomdev/discord.js-command-handler");
 //var cmdhandler = new handler(client, "commands", prefix);
